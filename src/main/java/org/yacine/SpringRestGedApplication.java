@@ -10,7 +10,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.yacine.Entity.Departement;
 import org.yacine.Entity.Poste;
+import org.yacine.Entity.Categorie;
 import org.yacine.Entity.User;
+import org.yacine.Repository.CategorieRepository;
 import org.yacine.Repository.DepartementRepository;
 import org.yacine.Repository.PosteRepository;
 import org.yacine.Repository.UserRepository;
@@ -29,6 +31,8 @@ public class SpringRestGedApplication implements CommandLineRunner {
 	private PosteRepository posteRepo;
 	@Autowired
 	private DepartementRepository departementRepo;
+	@Autowired
+	private CategorieRepository typeRepository;
 	@Value("${directory.racine}")
 	String racine;
 
@@ -64,6 +68,13 @@ public class SpringRestGedApplication implements CommandLineRunner {
 		User user3 = new User(null, "user3", "123", "abdou", "bouregba", poste3, null);
 		userRepo.save(user3);
 
+		// type document initialisation
+		
+		Categorie type1 =new Categorie(null,"facture", null);
+		typeRepository.save(type1);
+		Categorie type2 =new Categorie(null,"raport", null);
+		typeRepository.save(type2);
+		
 		
 		// get lists departements, postes, users
 		

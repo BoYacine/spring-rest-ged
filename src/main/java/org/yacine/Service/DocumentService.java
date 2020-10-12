@@ -7,13 +7,18 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.multipart.MultipartFile;
 import org.yacine.Entity.Document;
+import org.yacine.Entity.Categorie;
 import org.yacine.Entity.User;
 import org.yacine.Repository.DocumentRepository;
+import org.yacine.Repository.UserRepository;
 
 @Service
 public class DocumentService {
@@ -23,8 +28,11 @@ public class DocumentService {
 	@Autowired
 	UserService userService;
 
+	@Autowired UserRepository userRepository;
+
 	// upload documents
-	public String Upload(MultipartFile[] file, Document document, User user) {
+	public String Upload(MultipartFile[] file, Document document, User user , Categorie categorie) {
+
 		String fileName = "";
 		String[] format = null;
 		float size = 0;
@@ -38,8 +46,8 @@ public class DocumentService {
 			fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
 			format = fileName.split("\\.");
 			size = multipartFile.getSize() / 1024;
-			
-			path = Paths.get(userService.GetUserPath(user.getId())+ fileName);
+
+			path = Paths.get(userService.GetUserPath(user.getId()) + fileName);
 
 			// test if file is already exist
 			if (documentRepository.countByNomAndUserId(fileName, user.getId()) > 0) {
@@ -61,9 +69,67 @@ public class DocumentService {
 			document.setFormat(format[1]);
 			document.setDate(new Date());
 			document.setUser(user);
+			document.setCategorie(categorie);
 			documentRepository.save(document);
 
 		}
 		return path + "    " + format[1] + "    " + size + "    " + test;
 	}
+
+	public void delete(Long id) throws IOException {
+
+		Document document = documentRepository.findById(id).get();
+		Path path = Paths.get(document.getPath());
+
+		Files.delete(path);
+
+		documentRepository.deleteById(id);
+	}
+
+//	public Document Update(Document document, Long id) {
+//		Document doc = documentRepository.findById(id).get();
+//		document.setId(id);
+//		document.setNom(doc.getNom());
+//		document.setPath(doc.getPath());
+//		document.setSize(doc.getSize());
+//		document.setFormat(doc.getFormat());
+//		document.setDate(doc.getDate());
+//		documentRepository.save(document);
+//		return document;
+//	}
+//	
+//
+//	public void Update(MultipartFile file, Document document, User user, Categorie categorie, Long id) {
+//
+//		// get information from file
+//		String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+//		String []  format = fileName.split("\\.");
+//		float size = file.getSize() / 1024;
+//
+//		Path path = Paths.get(userService.GetUserPath(user.getId()) + fileName);
+//		
+//		try {
+//			// copy file to destination
+//			Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		
+//		
+//
+//		
+//		// add files information to data base
+//		document.setId(id);
+//		document.setNom(fileName);
+//		document.setPath(path + "");
+//		document.setSize(size);
+//		document.setFormat(format[1]);
+//		document.setDate(new Date());
+//		document.setUser(user);
+//		document.setCategorie(categorie);
+//		documentRepository.save(document);
+//
+//	}
+	
+
 }

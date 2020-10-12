@@ -30,5 +30,10 @@ public class Document {
 	@ManyToOne
 	@JoinColumn
 	private User user;
+	
+	@ManyToOne
+	@JoinColumn
+	private Categorie categorie;
+	
 
 }
