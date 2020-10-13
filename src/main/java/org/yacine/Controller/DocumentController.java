@@ -1,9 +1,13 @@
 package org.yacine.Controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,12 +32,12 @@ public class DocumentController {
 	@Autowired
 	DocumentService documentService;
 
-	@GetMapping("index")
+	@GetMapping(path = "index")
 	public String index() {
 		return "index";
 	}
 
-	@PostMapping("upload")
+	@PostMapping(path = "upload")
 	public ResponseEntity<String> Upload(@RequestParam("file") MultipartFile[] file, @ModelAttribute Document document,
 			@ModelAttribute User user, @ModelAttribute Categorie categorie) {
 		return new ResponseEntity<String>(documentService.Upload(file, document, user, categorie), HttpStatus.CREATED);
@@ -43,6 +47,21 @@ public class DocumentController {
 	public ResponseEntity<Void> Delete(@PathVariable Long id) throws IOException {
 		documentService.delete(id);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	
+	@GetMapping(path = "search")
+	public List<Document> SearchByPath(@RequestBody Document document){
+		return documentService.SearchByPath(document);
+	}
+	
+	@GetMapping(path = "/download/{id}")
+	public ResponseEntity<InputStreamResource> Download(@PathVariable Long id){
+		return documentService.Download(id);
+	}
+		
+	@GetMapping(path = "/get/{id}", produces = MediaType.APPLICATION_PDF_VALUE)
+	public byte[] getpdf(@PathVariable Long id) throws IOException {
+		return documentService.getpdf(id);
 	}
 	
 //	@PutMapping(path = "update/{id}")
@@ -57,4 +76,14 @@ public class DocumentController {
 //		documentService.Update(file, document, user, categorie, id);
 //		return new ResponseEntity<>(HttpStatus.OK);
 //	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }

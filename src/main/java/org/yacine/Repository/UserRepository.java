@@ -6,5 +6,7 @@ import org.yacine.Entity.User;
 
 @RepositoryRestResource
 public interface UserRepository extends JpaRepository<User, Long>{
+
+	
 	
 }

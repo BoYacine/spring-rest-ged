@@ -1,15 +1,25 @@
 package org.yacine.Service;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
+import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,10 +37,10 @@ public class DocumentService {
 	DocumentRepository documentRepository;
 	@Autowired
 	UserService userService;
-
+ 
 	@Autowired UserRepository userRepository;
 
-	// upload documents
+	// upload file in folder and save document in data base
 	public String Upload(MultipartFile[] file, Document document, User user , Categorie categorie) {
 
 		String fileName = "";
@@ -76,6 +86,7 @@ public class DocumentService {
 		return path + "    " + format[1] + "    " + size + "    " + test;
 	}
 
+	// delete file data base and folder by id
 	public void delete(Long id) throws IOException {
 
 		Document document = documentRepository.findById(id).get();
@@ -85,7 +96,46 @@ public class DocumentService {
 
 		documentRepository.deleteById(id);
 	}
+	
+	// search file by document object
+	public List<Document> SearchByPath(Document document){
+		
+		String path= userService.GetUserPath(document.getUser().getId());
+		
+		return documentRepository.findByPathContainsAndFormat(path, document.getFormat());
+	}
+	
+	// download file by id
+	public ResponseEntity<InputStreamResource> Download(Long id) {
 
+		Document document = documentRepository.findById(id).get();
+		//Document document = documentRepository.findBynom(nom);
+		try {
+			InputStreamResource filestream = new InputStreamResource(new FileInputStream(new File(document.getPath())));
+			HttpHeaders headers = new HttpHeaders();
+			headers.add("Contenet-Disposition", "attachement;filename=" + document.getNom());
+
+			return ResponseEntity.ok().headers(headers)
+					.contentType(MediaType.parseMediaType("application/octet-stream")).body(filestream);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	// get PDF content to browser
+ 	public byte[] getpdf(Long id) throws IOException {
+		// get document by id
+		Document document = documentRepository.findById(id).get();
+		// pointer new file to path of document
+		File file = new File(document.getPath());
+		Path path = Paths.get(file.toURI());
+		// return byte File
+		return Files.readAllBytes(path);
+	}
+
+	
 //	public Document Update(Document document, Long id) {
 //		Document doc = documentRepository.findById(id).get();
 //		document.setId(id);
